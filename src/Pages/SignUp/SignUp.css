@@ -1,0 +1,10 @@
+.registerImg {
+    background: url("/public/img/lungs3.webp");
+    background-position: center;
+    background-size: 114% 100%;
+    background-repeat: no-repeat;
+}
+
+label{
+    color: black;
+}
