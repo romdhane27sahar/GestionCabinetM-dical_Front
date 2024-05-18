@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./FormAddUser.css"
+import "./FormAddUser.css";
+
+//validation imports
+
+import * as yup from "yup"; // Import Yup
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 function FormAddUser() {
   const [name, setName] = useState("");
@@ -22,11 +28,90 @@ function FormAddUser() {
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [isAddingUser, setIsAddingUser] = useState(false);
 
+  // Define Yup schema for validation
+  const schema = yup.object().shape({
+    name: yup
+      .string()
+      .min(3, "Prénom contient minimum 3 lettres")
+      .required("Prénom est obligatoire !")
+      .test(
+        "no-digits",
+        "Le nom ne doit pas contenir de chiffres !",
+        (value) => !/\d/.test(value)
+      ),
+
+    lastname: yup
+      .string()
+      .min(3, "Nom contient minimum 3 lettres")
+      .required("Nom est obligatoire !")
+      .test(
+        "no-digits",
+        "Le nom ne doit pas contenir de chiffres",
+        (value) => !/\d/.test(value)
+      ),
+
+    address: yup.string().required("Adresse est obligatoire !"),
+
+    email: yup
+      .string()
+      .email("Email invalide")
+      .required("Email est obligatoire !")
+      .matches(/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}/, "Email invalide"),
+
+    telephone: yup
+      .string()
+      .matches(/^\d{8}$/, "Numero téléphone doit est de 8 chiffres")
+      .required("téléphone est un champs obligatoire"),
+
+    password: yup
+      .string()
+      .min(8, "Mot de passe trop court (minimum 8 caractères)")
+      .required("Mot de passe est obligatoire !")
+      .matches(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Mot de passe doit contenir au moins un caractère spécial"
+      )
+      .matches(/[0-9]/, "Mot de passe doit contenir au moins un chiffre")
+      .matches(
+        /[A-Z]/,
+        "Mot de passe doit contenir au moins une lettre majuscule "
+      )
+      .matches(
+        /[a-z]/,
+        "Mot de passe doit contenir au moins une lettre miniscule"
+      ),
+
+    confPassword: yup
+      .string()
+      .oneOf(
+        [yup.ref("password"), null],
+        "Les mots de passe doivent correspondre"
+      )
+      .required("Confirmer mot de passe est obligatoire !"),
+
+    role: yup
+      .string()
+
+      .oneOf(
+        ["admin", "secretaire", "medecin"],
+        "Veuillez selectionner un role !"
+      ),
+  });
+
+  //execute the schema validation to the form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
   const saveUser = async (e) => {
-    e.preventDefault();
+    //e.preventDefault();
+
     try {
-      const response=await axios.post("http://localhost:5000/users", {
+      const response = await axios.post("http://localhost:5000/users", {
         name: name,
         email: email,
         password: password,
@@ -36,26 +121,32 @@ function FormAddUser() {
         address: address,
         telephone: telephone,
       });
-      navigate("/users");
+      //navigate("/users");
 
       //boite de dialogue
-
       if (response.status === 201) {
         setShowConfirmationDialog(true); // Show confirmation dialog
       } else {
         // Handle unsuccessful status codes (e.g., 400, 500)
         setMsg("Erreur lors de l'ajout de l'utilisateur"); // Set error message
       }
-      
     } catch (error) {
       if (error.response) {
         setMsg(error.response.data.msg);
       }
     }
-    
-
   };
-  
+
+  //boite de dialogue buttons functions to navigate
+  const handleReturnToList = () => {
+    // Redirect to users list
+    navigate("/users");
+  };
+
+  const handleContinueAdding = () => {
+    setShowConfirmationDialog(false);
+    // Continuer l'ajout
+  };
 
   return (
     <div>
@@ -72,28 +163,64 @@ function FormAddUser() {
             <div className="card-body">
               {/* Add some space */}
               <span className="mr-2"></span>
+
+              {/* boite de dialogue */}
+              <div>
+                {showConfirmationDialog && (
+                  <div className="confirmation-dialog">
+                    <h5 style={{ color: "green" }}>
+                      Utilisateur ajouté avec succès.
+                    </h5>
+                    <br />
+                    <p>
+                      Voulez-vous retourner à la liste des utilisateurs ou
+                      continuer l'ajout ?
+                    </p>
+
+                    <div>
+                      <Link to="/users">
+                        <button onClick={handleReturnToList}>
+                          Retourner à la liste des utilisateurs
+                        </button>
+                      </Link>
+
+                      <button onClick={handleContinueAdding}>
+                        Continuer l'ajout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* fin boite de dialogue */}
               {/* Form */}
-              <form className="user" onSubmit={saveUser}>
+              <form className="user" onSubmit={handleSubmit(saveUser)}>
                 <div className="form-group row">
                   <div className="col-sm-6 mb-3 mb-sm-0">
                     <input
                       type="text"
                       className="form-control form-control-user"
-                      id="exampleFirstName"
+                      id="exampleLastName"
                       placeholder="Nom"
+                      //name="lastname"
                       value={lastname}
+                      {...register("lastname")}
                       onChange={(e) => setLastname(e.target.value)}
                     />
+                    {/* afficher le message d'erreur de valisation  */}
+                    <p style={{ color: "red" }}>{errors.lastname?.message}</p>
                   </div>
                   <div className="col-sm-6">
                     <input
                       type="text"
                       className="form-control form-control-user"
-                      id="exampleLastName"
+                      id="exampleFirstName"
                       placeholder="Prénom"
+                      {...register("name")}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
+                    <p style={{ color: "red" }}>{errors.name?.message}</p>
                   </div>
                 </div>
 
@@ -102,21 +229,25 @@ function FormAddUser() {
                     <input
                       type="text"
                       className="form-control form-control-user"
-                      id="exampleInputEmail"
+                      id="exampleAddress"
                       placeholder="Adresse "
+                      {...register("address")}
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                     />
+                    <p style={{ color: "red" }}>{errors.address?.message}</p>
                   </div>
                   <div className="form-group col-sm-6 ">
                     <input
                       type="text"
                       className="form-control form-control-user"
-                      id="exampleInputEmail"
+                      id="examplePhone"
                       placeholder="Téléphone"
+                      {...register("telephone")}
                       value={telephone}
                       onChange={(e) => setTelephone(e.target.value)}
                     />
+                    <p style={{ color: "red" }}>{errors.telephone?.message}</p>
                   </div>
                 </div>
 
@@ -125,21 +256,25 @@ function FormAddUser() {
                     <input
                       type="email"
                       className="form-control form-control-user"
-                      id="exampleInputPassword"
+                      id="exampleMail"
                       placeholder="E-mail"
+                      {...register("email")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
+                    <p style={{ color: "red" }}>{errors.email?.message}</p>
                   </div>
                   <div className="col-sm-6">
                     <input
                       type="password"
                       className="form-control form-control-user"
-                      id="exampleInputPassword"
+                      id="examplePassword"
                       placeholder="Mot de passe "
+                      {...register("password")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
+                    <p style={{ color: "red" }}>{errors.password?.message}</p>
                   </div>
                 </div>
 
@@ -148,17 +283,22 @@ function FormAddUser() {
                     <input
                       type="password"
                       className="form-control form-control-user"
-                      id="exampleRepeatPassword"
+                      id="exampleConfPassword"
                       placeholder="Confirmer mot de passe"
+                      {...register("confPassword")}
                       value={confPassword}
                       onChange={(e) => setConfPassword(e.target.value)}
                     />
+                    <p style={{ color: "red" }}>
+                      {errors.confPassword?.message}
+                    </p>
                   </div>
                   <div className="col-sm-6">
                     <label>Role</label>
 
                     <Form.Select
                       className="form-control"
+                      {...register("role", { required: true })}
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
                     >
@@ -167,6 +307,7 @@ function FormAddUser() {
                       <option value="secretaire">Secretaire</option>
                       <option value="medecin">Medecin</option>
                     </Form.Select>
+                    <p style={{ color: "red" }}>{errors.role?.message}</p>
                   </div>
                 </div>
                 <div className="col-sm-3 mx-auto">
@@ -177,16 +318,6 @@ function FormAddUser() {
                     <Link to="/acceuil"></Link>
                     Ajouter Utilisateur
                   </button>
-
-{/* 
-                  {showConfirmationDialog && (
-  <div className="confirmation-dialog modal-dialog" >
-    <p>Utilisateur ajouté avec succès. Voulez-vous retourner à la liste des utilisateurs ?</p>
-    <button onClick={() => window.location.href = '/users'}>Retourner à la liste des utilisateurs </button>
-    <button onClick={() => setShowConfirmationDialog(false)}>Continuer l'ajout</button>
-  </div>
-)} */}
-                
                 </div>
               </form>
               <hr />
@@ -196,7 +327,6 @@ function FormAddUser() {
         {/* /.container-fluid */}
       </div>
       {/* End of Main Content */}
-      
     </div>
   );
 }
