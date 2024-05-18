@@ -138,8 +138,9 @@ function FormAddUser() {
   };
 
   //boite de dialogue buttons functions to navigate
-  const handleReturnToList = () => {
+  const handleReturnToList = (e) => {
     // Redirect to users list
+  e.preventDefault();
     navigate("/users");
   };
 
@@ -147,6 +148,8 @@ function FormAddUser() {
     setShowConfirmationDialog(false);
     // Continuer l'ajout
   };
+
+
 
   return (
     <div>
@@ -192,7 +195,7 @@ function FormAddUser() {
                 )}
               </div>
 
-              {/* fin boite de dialogue */}
+                 {/* fin boite de dialogue */}
               {/* Form */}
               <form className="user" onSubmit={handleSubmit(saveUser)}>
                 <div className="form-group row">

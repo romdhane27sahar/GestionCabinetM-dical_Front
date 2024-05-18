@@ -5,6 +5,8 @@ import { FaEdit } from "react-icons/fa";
 
 function UserList() {
   const [users, setUsers] = useState([]);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState(null);
 
   useEffect(() => {
     getUsers();
@@ -15,11 +17,26 @@ function UserList() {
     setUsers(response.data);
   };
 
+  // const deleteUser = async (userId) => {
+  //   await axios.delete(`http://localhost:5000/users/${userId}`);
+  //   getUsers();
+  // };
+
+
   const deleteUser = async (userId) => {
-    await axios.delete(`http://localhost:5000/users/${userId}`);
-    getUsers();
+    setUserIdToDelete(userId); // Store the user ID to be deleted
+    setShowConfirmationDialog(true); // Open confirmation dialog
   };
 
+  const handleConfirmDelete = async (userId) => {
+    await axios.delete(`http://localhost:5000/users/${userId}`);
+    getUsers();
+    setShowConfirmationDialog(false); // Close confirmation dialog
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirmationDialog(false); // Close confirmation dialog
+  };
   return (
     <div>
       {/* Main Content */}
@@ -31,6 +48,24 @@ function UserList() {
 
           {/* Add some space */}
           <span className="mr-3"></span>
+
+         
+           {/* Confirmation Dialog */}
+           {showConfirmationDialog && (
+            <div className="confirmation-dialog">
+              <h5 style={{ color: "red" }}>
+                Suppression d'utilisateur confirmée ?
+              </h5>
+              <br />
+              <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
+              <div>
+                <button onClick={handleConfirmDelete}>Confirmer</button>
+                <button onClick={handleCancelDelete}>Annuler</button>
+              </div>
+            </div>
+          )}
+
+              {/* fin Confirmation Dialog */}
 
           {/* DataTales Example */}
           <div className="card shadow mb-4">
