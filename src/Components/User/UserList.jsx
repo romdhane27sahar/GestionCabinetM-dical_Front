@@ -7,6 +7,7 @@ function UserList() {
   const [users, setUsers] = useState([]);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState(null); // State for success message
 
   useEffect(() => {
     getUsers();
@@ -22,16 +23,32 @@ function UserList() {
   //   getUsers();
   // };
 
-
   const deleteUser = async (userId) => {
     setUserIdToDelete(userId); // Store the user ID to be deleted
     setShowConfirmationDialog(true); // Open confirmation dialog
   };
 
-  const handleConfirmDelete = async (userId) => {
-    await axios.delete(`http://localhost:5000/users/${userId}`);
-    getUsers();
-    setShowConfirmationDialog(false); // Close confirmation dialog
+  // const handleConfirmDelete = async () => {
+  //   await axios.delete(`http://localhost:5000/users/${userIdToDelete}`);
+  //   getUsers();
+
+  //   setShowConfirmationDialog(false); // Close confirmation dialog
+  // };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/users/${userIdToDelete}`);//delete method(controller) call
+      setDeleteSuccessMessage("Supprimé avec succès !"); // Set success message
+      getUsers(); //re-envoi liste users
+      setTimeout(() => {
+        setDeleteSuccessMessage(null); // Reset success message after 3 seconds
+      }, 2000);
+    } catch (error) {
+      // Handle deletion error (optional)
+      console.error("Error deleting user:", error);
+    } finally { // garantir que la boîte de dialogue de confirmation est toujours fermée après que la tentative de suppression d'un utilisateur ait été faite, qu'elle soit réussie ou non
+      setShowConfirmationDialog(false); // Close confirmation dialog
+    }
   };
 
   const handleCancelDelete = () => {
@@ -49,25 +66,49 @@ function UserList() {
           {/* Add some space */}
           <span className="mr-3"></span>
 
-         
-           {/* Confirmation Dialog */}
-           {showConfirmationDialog && (
-            <div className="confirmation-dialog">
-              <h5 style={{ color: "red" }}>
-                Suppression d'utilisateur confirmée ?
-              </h5>
-              <br />
-              <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
-              <div>
-                <button onClick={handleConfirmDelete}>Confirmer</button>
-                <button onClick={handleCancelDelete}>Annuler</button>
+          {/* Confirmation Dialog */}
+          {showConfirmationDialog && (
+            <div className="col md-6 d-flex justify-content-center">
+              <div className="confirmation-dialog">
+                <br />
+                <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
+
+                <div>
+                  <button
+                    style={{ backgroundColor: "#3da35d" }}
+                    onClick={handleConfirmDelete}
+                  >
+                    Confirmer
+                  </button>
+                  <button
+                    style={{ backgroundColor: "#b7b7a4" }}
+                    onClick={handleCancelDelete}
+                  >
+                    Annuler
+                  </button>
+                </div>
               </div>
             </div>
           )}
+          {/* End Confirmation Dialog */}
 
-              {/* fin Confirmation Dialog */}
+          {/* Add some space */}
+          <span className="mr-3"></span>
 
-          {/* DataTales Example */}
+          {/* Delete Success Message */}
+          {deleteSuccessMessage && (
+            <div className="d-flex justify-content-center">
+              <div
+                className=" text-center col-md-3 alert alert-success"
+                role="alert"
+              >
+                {deleteSuccessMessage}
+              </div>
+            </div>
+          )}
+        {/* end Delete Success Message */}
+
+          {/* DataTable Example */}
           <div className="card shadow mb-4">
             <div className="card-body">
               <div className="table-responsive">

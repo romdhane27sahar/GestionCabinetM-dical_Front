@@ -25,8 +25,10 @@ function FormAddUser() {
 
   const navigate = useNavigate();
 
+  //confirmation dialog
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-  const [isAddingUser, setIsAddingUser] = useState(false);
+  //add success message state
+  const [addSuccessMessage, setaddSuccessMessage] = useState(null); // State for success message
 
   // Define Yup schema for validation
   const schema = yup.object().shape({
@@ -107,6 +109,7 @@ function FormAddUser() {
     resolver: yupResolver(schema),
   });
 
+  //add function
   const saveUser = async (e) => {
     //e.preventDefault();
 
@@ -126,6 +129,11 @@ function FormAddUser() {
       //boite de dialogue
       if (response.status === 201) {
         setShowConfirmationDialog(true); // Show confirmation dialog
+
+        setaddSuccessMessage("Utilisateur ajouté avec succès !"); // Set success message
+        setTimeout(() => {
+          setaddSuccessMessage(null); // Reset success message after 3 seconds
+        }, 2500);
       } else {
         // Handle unsuccessful status codes (e.g., 400, 500)
         setMsg("Erreur lors de l'ajout de l'utilisateur"); // Set error message
@@ -140,7 +148,7 @@ function FormAddUser() {
   //boite de dialogue buttons functions to navigate
   const handleReturnToList = (e) => {
     // Redirect to users list
-  e.preventDefault();
+    e.preventDefault(); //on doit l'ajouter sinon l'ajout ne fonctionnera pas
     navigate("/users");
   };
 
@@ -148,8 +156,6 @@ function FormAddUser() {
     setShowConfirmationDialog(false);
     // Continuer l'ajout
   };
-
-
 
   return (
     <div>
@@ -167,35 +173,74 @@ function FormAddUser() {
               {/* Add some space */}
               <span className="mr-2"></span>
 
-              {/* boite de dialogue */}
               <div>
-                {showConfirmationDialog && (
-                  <div className="confirmation-dialog">
-                    <h5 style={{ color: "green" }}>
-                      Utilisateur ajouté avec succès.
-                    </h5>
-                    <br />
-                    <p>
-                      Voulez-vous retourner à la liste des utilisateurs ou
-                      continuer l'ajout ?
-                    </p>
+                
+              {msg && (
+                  <div className="d-flex justify-content-center">
+                    <div
+                      className=" text-center col-md-3 alert alert-success"
+                      role="alert"
+                    >
+                      {msg}
+                    </div>
+                  </div>
+                )}
 
-                    <div>
-                      <Link to="/users">
-                        <button onClick={handleReturnToList}>
+                {/* Add Success Message */}
+                {addSuccessMessage && (
+                  <div className="d-flex justify-content-center">
+                    <div
+                      className=" text-center col-md-3 alert alert-success"
+                      role="alert"
+                    >
+                      {addSuccessMessage}
+                    </div>
+                  </div>
+                )}
+                {/* end Add Success Message */}
+
+                {/* boite de dialogue */}
+                {showConfirmationDialog && (
+                  <div className="col md-6 d-flex justify-content-center">
+                    <div className="confirmation-dialog">
+                      <br></br>
+                      <p>
+                        Voulez-vous retourner à la liste des utilisateurs ou
+                        continuer l'ajout ?
+                      </p>
+                      <br />
+
+                      <div>
+                        {/* <Link to="/users"> */}
+                        <button
+                          style={{ backgroundColor: "#648de5" }}
+                          onClick={
+                            handleReturnToList
+                          } /**il faut un bouton et onClick pour naviguer à l'autre page suite à un clic sur bouton sinon link to ("/users")va retourner automatiquement sans clic sur bouton  , */
+                        >
                           Retourner à la liste des utilisateurs
                         </button>
-                      </Link>
+                        {/* </Link> */}
 
-                      <button onClick={handleContinueAdding}>
-                        Continuer l'ajout
-                      </button>
+                        <button
+                          style={{ backgroundColor: "#648de5" }}
+                          onClick={handleContinueAdding}
+                        >
+                          Continuer l'ajout
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
+              {/* end boite de dialogue */}
+              <br></br>
 
-                 {/* fin boite de dialogue */}
+              {/* fin boite de dialogue */}
+
+              {/* Add some space */}
+              <span className="mr-3"></span>
+
               {/* Form */}
               <form className="user" onSubmit={handleSubmit(saveUser)}>
                 <div className="form-group row">
