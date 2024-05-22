@@ -231,12 +231,12 @@ function SideBar() {
           >
             <div className="bg-white py-2 collapse-inner rounded">
               <h6 className="collapse-header">Gérer Fiches Patients:</h6>
-              <a className="collapse-item" href="buttons.html">
-                Consulter
-              </a>
-              <a className="collapse-item" href="cards.html">
-                Ajouter
-              </a>
+              <Link to="/listFichesSec" className="collapse-item">
+                  Consulter
+                </Link>
+              <Link to="/NewFicheSec" className="collapse-item">
+                  Ajouter
+                </Link>
             </div>
           </div>
         </li>

@@ -1,0 +1,67 @@
+.confirmation-dialog {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.confirmation-dialog p {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.confirmation-dialog button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 10px;
+  transition: background-color 0.3s ease;
+}
+
+.confirmation-dialog button:hover {
+  background-color: #0056b3;
+}
+.heightt{
+  height: 40px
+
+}
+.anuller{
+  color: #0056b3;
+  border-color: #0056b3;
+ 
+  
+}
+.space{
+  margin-top: 40px;
+}
+
+
+.custom-option-padding {
+  padding-left: 20px;
+}
+
+.custom-select {
+  position: relative; /* Allow label positioning */
+}
+
+.custom-select select {
+  padding-left: 20px; /* Space for the label */
+}
+
+.custom-select label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%); /* Center the label vertically */
+  left: 10px; /* Adjust label positioning */
+  color: #ccc; /* Adjust label color */
+  font-size: 14px; /* Adjust label font size */
+}
+
+label{
+  margin-left: 15px;
+  color: #6e707e
+}
