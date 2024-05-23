@@ -11,6 +11,12 @@ import ListPatients from './Components/Patient/ListPatients';
 import Patients from './Pages/Patient/Patients';
 import NewFiche from './Pages/Patient/NewFiche';
 import ListFiches from './Pages/Patient/ListFiches';
+import EditFiche from './Pages/Patient/EditFiche';
+import AddRendezVous from './Pages/RendezVous/AddRendezVous';
+import ListRendezVous from './Pages/RendezVous/ListRendezVous';
+import EditRendezVous from './Pages/RendezVous/EditRendezVous';
+import DetailsPatient from './Pages/Patient/DetailsPatient';
+import EditDetails from './Pages/Patient/EditDetails';
 
 // import { useState } from "react";
 // import { createContext } from "react";
@@ -49,9 +55,19 @@ function App() {
 
           <Route path="/listPatientsMed" element={<Patients></Patients>}></Route>
           <Route path="/NewFicheSec" element={<NewFiche></NewFiche>}></Route>
-          <Route path="listFichesSec" element={<ListFiches></ListFiches>}></Route>
+          <Route path="/listFichesSec" element={<ListFiches></ListFiches>}></Route>
+          <Route path="/fiches/edit" element={<EditFiche></EditFiche>}></Route>
+          <Route path="/addRendezVous" element={<AddRendezVous></AddRendezVous>}></Route>
+          <Route path="/listRendezVous" element={<ListRendezVous></ListRendezVous>}></Route>
+          <Route path="/rendezVous/edit" element={<EditRendezVous></EditRendezVous>}></Route>
+          <Route path="/detailsPatientMed" element={<DetailsPatient></DetailsPatient>}></Route>
+          <Route path="/editDetailsPatMed" element={<EditDetails></EditDetails>}></Route>
 
 
+
+
+
+          
 
           {/* <Route path="/otp" element={<OTPInput/>} ></Route>
         <Route path="/reset" element={<Reset />} ></Route>

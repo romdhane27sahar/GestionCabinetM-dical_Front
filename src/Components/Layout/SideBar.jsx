@@ -8,11 +8,8 @@ import { FaUsers } from "react-icons/fa";
 import { FaUser } from "react-icons/fa";
 import { PiFiles } from "react-icons/pi";
 import { MdOutlineEmail } from "react-icons/md";
-
-
-
-
-
+import { SlCalender } from "react-icons/sl";
+import { LuFileSpreadsheet } from "react-icons/lu";
 
 function SideBar() {
   const dispatch = useDispatch();
@@ -41,9 +38,8 @@ function SideBar() {
         {/* Nav Item - Dashboard */}
         <li className="nav-item active">
           <Link to="/acceuil" className="nav-link">
-
             <FaHome />
-            <span>   </span>
+            <span> </span>
             <span>Acceuil</span>
           </Link>
         </li>
@@ -62,7 +58,7 @@ function SideBar() {
               aria-controls="collapseTwo"
             >
               <FaUsers />
-              <span>   </span>
+              <span> </span>
 
               <span>Utilisateurs</span>
             </a>
@@ -93,15 +89,14 @@ function SideBar() {
         {/* Nav Item - Pages Collapse Menu */}
 
         {user && user.role === "medecin" && (
-         
           <div>
             <li className="nav-item active">
-            <Link to ="/listPatientsMed" className="nav-link" >  
-            <FaUser />
-            <span>   </span>
+              <Link to="/listPatientsMed" className="nav-link">
+                <FaUser />
+                <span> </span>
 
-               <span>Liste Patients</span>
-          </Link>
+                <span>Liste Patients</span>
+              </Link>
             </li>
             <li className="nav-item">
               <a
@@ -114,7 +109,7 @@ function SideBar() {
               >
                 <PiFiles />
 
-                <span>   </span>
+                <span> </span>
 
                 <span>Ordonnances</span>
               </a>
@@ -145,8 +140,8 @@ function SideBar() {
                 aria-expanded="true"
                 aria-controls="collapseUtilities"
               >
-<MdOutlineEmail />
-<span>   </span>
+                <MdOutlineEmail />
+                <span> </span>
                 <span>Lettres</span>
               </a>
               <div
@@ -210,47 +205,75 @@ function SideBar() {
 
         {/* Secretaire */}
         {user && user.role === "secretaire" && (
-<div>
-        <li className="nav-item">
-          <a
-            className="nav-link collapsed"
-            href="#"
-            data-toggle="collapse"
-            data-target="#collapseFiche"
-            aria-expanded="true"
-            aria-controls="collapseTwo"
-          >
-            <i className="fas fa-fw fa-cog" />
-            <span>Fiches Patients</span>
-          </a>
-          <div
-            id="collapseFiche"
-            className="collapse"
-            aria-labelledby="headingTwo"
-            data-parent="#accordionSidebar"
-          >
-            <div className="bg-white py-2 collapse-inner rounded">
-              <h6 className="collapse-header">Gérer Fiches Patients:</h6>
-              <Link to="/listFichesSec" className="collapse-item">
-                  Consulter
-                </Link>
-              <Link to="/NewFicheSec" className="collapse-item">
-                  Ajouter
-                </Link>
-            </div>
+          <div>
+            <li className="nav-item">
+              <a
+                className="nav-link collapsed"
+                href="#"
+                data-toggle="collapse"
+                data-target="#collapseFiche"
+                aria-expanded="true"
+                aria-controls="collapseTwo"
+              >
+                <LuFileSpreadsheet />
+                <span> </span>
+
+                <span>Fiches Patients</span>
+              </a>
+              <div
+                id="collapseFiche"
+                className="collapse"
+                aria-labelledby="headingTwo"
+                data-parent="#accordionSidebar"
+              >
+                <div className="bg-white py-2 collapse-inner rounded">
+                  <h6 className="collapse-header">Gérer Fiches Patients:</h6>
+                  <Link to={"/listFichesSec"} className="collapse-item">
+                    Consulter
+                  </Link>
+                  <Link to={"/NewFicheSec"} className="collapse-item">
+                    Ajouter
+                  </Link>
+                </div>
+              </div>
+            </li>
+
+            <li className="nav-item">
+              <a
+                className="nav-link collapsed"
+                href="#"
+                data-toggle="collapse"
+                data-target="#collapseRdv"
+                aria-expanded="true"
+                aria-controls="collapseTwo"
+              >
+                <LuFileSpreadsheet />
+                <span> </span>
+
+                <span>Rendez-vous</span>
+              </a>
+              <div
+                id="collapseRdv"
+                className="collapse"
+                aria-labelledby="headingTwo"
+                data-parent="#accordionSidebar"
+              >
+                <div className="bg-white py-2 collapse-inner rounded">
+                  <h6 className="collapse-header">Gérer Rendez-vous:</h6>
+                  <Link to={"/listRendezVous"} className="collapse-item">
+                    Consulter
+                  </Link>
+                  <Link to={"/addRendezVous"} className="collapse-item">
+                    Ajouter
+                  </Link>
+                </div>
+              </div>
+            </li>
+
+           
+            {/* Divider */}
+            <hr className="sidebar-divider d-none d-md-block" />
           </div>
-        </li>
-
-        <li className="nav-item">
-          <a className="nav-link" href="tables.html">
-            <i className="fas fa-fw fa-table" />
-            <span>Rendez-vous</span>
-          </a>
-        </li>
-
-        {/* Divider */}
-        <hr className="sidebar-divider d-none d-md-block" />
-        </div>
         )}
 
         {/* Sidebar Toggler (Sidebar) */}

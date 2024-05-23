@@ -47,14 +47,14 @@ function ListPatients() {
 
               <tbody>
                 <tr>
-                  <td>1</td>
-                  <td>salhi</td>
-                  <td>ali</td>
-                  <td>Homme</td>
-                  <td>27/04/2000</td>
-                  <td>5/05/2024</td>
-                  <td >
-                    <input type="text" />
+                  <td className="text-center">1</td>
+                  <td className="text-center">salhi</td>
+                  <td className="text-center">ali</td>
+                  <td className="text-center">Homme</td>
+                  <td className="text-center">27/04/2000</td>
+                  <td className="text-center">5/05/2024</td>
+                  <td className="text-center" >
+                  <input type="date" className="form-control" />
                   </td>
                   <td className="text-center col-md-2">
                     <BiSolidConversation />
@@ -63,7 +63,13 @@ function ListPatients() {
                     <FaFolderOpen />
                   </td>
                   <td className="text-center col-md-2">
+                    
+                  <Link
+                            to={"/detailsPatientMed"}
+                            class=" btn "
+                          >
                     <MdInfo />
+                    </Link>
                   </td>
 
                   <td >
@@ -78,7 +84,7 @@ function ListPatients() {
                           {/* Add some space */}
 
                           <Link
-                            to={""}
+                            to={`/fiches/edit`}
                             class="btn btn-primary btn-circle btn-sm"
                           >
                             <FaEdit />
