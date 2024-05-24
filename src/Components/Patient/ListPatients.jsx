@@ -7,6 +7,7 @@ import { MdInfo } from "react-icons/md";
 import "./ListPatients.css"
 
 function ListPatients() {
+  
   return (
     <div>
     {/* Main Content */}

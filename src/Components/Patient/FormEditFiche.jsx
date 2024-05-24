@@ -1,161 +1,142 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "./FormNewFiche.css";
-
+import { useNavigate, useParams } from "react-router-dom";
 //validation imports
-
 import * as yup from "yup"; // Import Yup
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import "./FormNewFiche.css";
 
 function FormEditFiche() {
-  //   const [name, setName] = useState("");
-  //   const [email, setEmail] = useState("");
-  //   const [password, setPassword] = useState("");
-  //   const [confPassword, setConfPassword] = useState("");
-  //   const [role, setRole] = useState("");
-  //   const [msg, setMsg] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
-  //   const [lastname, setLastname] = useState("");
-  //   const [address, setAddress] = useState("");
-  //   const [telephone, setTelephone] = useState("");
+  const [msg, setMsg] = useState("");
 
-  //   const navigate = useNavigate();
+  const [lastname, setLastname] = useState("");
+  const [address, setAddress] = useState("");
+  const [numSecuriteSoc, setNumSecuriteSoc] = useState("");
+  const [sexe, setSexe] = useState("");
+  const [telephone, setTelephone] = useState("");
 
-  //   //confirmation dialog
-  //   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-  //   //add success message state
-  //   const [addSuccessMessage, setaddSuccessMessage] = useState(null); // State for success message
+  const [dateNaiss, setDateNaiss] = useState("");
 
-  //   // Define Yup schema for validation
-  //   const schema = yup.object().shape({
-  //     name: yup
-  //       .string()
-  //       .min(3, "Prénom contient minimum 3 lettres")
-  //       .required("Prénom est obligatoire !")
-  //       .test(
-  //         "no-digits",
-  //         "Le nom ne doit pas contenir de chiffres !",
-  //         (value) => !/\d/.test(value)
-  //       ),
+  const navigate = useNavigate();
 
-  //     lastname: yup
-  //       .string()
-  //       .min(3, "Nom contient minimum 3 lettres")
-  //       .required("Nom est obligatoire !")
-  //       .test(
-  //         "no-digits",
-  //         "Le nom ne doit pas contenir de chiffres",
-  //         (value) => !/\d/.test(value)
-  //       ),
+  //recupérer l'id de l'url
+  const { id } = useParams(); //useParams est un hook de React Router qui permet de récupérer les paramètres de l'URL dans un composant React
 
-  //     address: yup.string().required("Adresse est obligatoire !"),
+  //Delete Success Message
+  const [editSuccessMessage, seteditSuccessMessage] = useState("");
 
-  //     email: yup
-  //       .string()
-  //       .email("Email invalide")
-  //       .required("Email est obligatoire !")
-  //       .matches(/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}/, "Email invalide"),
+  // Define Yup schema for validation
+  const schema = yup.object().shape({
+    name: yup
+      .string()
+      .min(3, "Prénom contient minimum 3 lettres")
+      .required("Prénom est obligatoire !")
+      .test(
+        "no-digits",
+        "Le nom ne doit pas contenir de chiffres !",
+        (value) => !/\d/.test(value)
+      ),
 
-  //     telephone: yup
-  //       .string()
-  //       .matches(/^\d{8}$/, "Numero téléphone doit est de 8 chiffres")
-  //       .required("téléphone est un champs obligatoire"),
+    lastname: yup
+      .string()
+      .min(3, "Nom contient minimum 3 lettres")
+      .required("Nom est obligatoire !")
+      .test(
+        "no-digits",
+        "Le nom ne doit pas contenir de chiffres",
+        (value) => !/\d/.test(value)
+      ),
 
-  //     password: yup
-  //       .string()
-  //       .min(8, "Mot de passe trop court (minimum 8 caractères)")
-  //       .required("Mot de passe est obligatoire !")
-  //       .matches(
-  //         /[!@#$%^&*(),.?":{}|<>]/,
-  //         "Mot de passe doit contenir au moins un caractère spécial"
-  //       )
-  //       .matches(/[0-9]/, "Mot de passe doit contenir au moins un chiffre")
-  //       .matches(
-  //         /[A-Z]/,
-  //         "Mot de passe doit contenir au moins une lettre majuscule "
-  //       )
-  //       .matches(
-  //         /[a-z]/,
-  //         "Mot de passe doit contenir au moins une lettre miniscule"
-  //       ),
+    address: yup.string().required("Adresse est obligatoire !"),
 
-  //     confPassword: yup
-  //       .string()
-  //       .oneOf(
-  //         [yup.ref("password"), null],
-  //         "Les mots de passe doivent correspondre"
-  //       )
-  //       .required("Confirmer mot de passe est obligatoire !"),
+    email: yup
+      .string()
+      .email("Email invalide")
+      .required("Email est obligatoire !")
+      .matches(/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}/, "Email invalide"),
 
-  //     role: yup
-  //       .string()
+    telephone: yup
+      .string()
+      .matches(/^\d{8}$/, "Numero téléphone doit est de 8 chiffres")
+      .required("téléphone est un champs obligatoire"),
 
-  //       .oneOf(
-  //         ["admin", "secretaire", "medecin"],
-  //         "Veuillez selectionner un role !"
-  //       ),
-  //   });
+    dateNaiss: yup
+      .date()
+      .nullable()
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : value
+      ) //mesure de précauton (car onChange deja transforme le vide en null ) transforme la valeur vide en null avant la validation: spécifier explicitement à yup que si la valeur originale (originalValue) est une chaîne vide (""), elle doit être transformée en null
+      .required("Veuillez choisir la date de naissance !"),
 
-  //   //execute the schema validation to the form
-  //   const {
-  //     register,
-  //     handleSubmit,
-  //     formState: { errors },
-  //   } = useForm({
-  //     resolver: yupResolver(schema),
-  //   });
+    sexe: yup
+      .string()
+      .oneOf(["Femme", "Homme"], "Veuillez selectionner le sexe !"),
 
-  //   //add function
-  //   const saveUser = async (e) => {
-  //     //e.preventDefault();
+    numSecuriteSoc: yup
+      .string()
+      .required("Veuillez entrer le numéro de la sécurité sociale !"),
+  });
 
-  //     try {
-  //       const response = await axios.post("http://localhost:5000/users", {
-  //         name: name,
-  //         email: email,
-  //         password: password,
-  //         confPassword: confPassword,
-  //         role: role,
-  //         lastname: lastname,
-  //         address: address,
-  //         telephone: telephone,
-  //       });
-  //       //navigate("/users");
+  //execute the schema validation to the form
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
-  //       //boite de dialogue
-  //       if (response.status === 201) {
-  //         setShowConfirmationDialog(true); // Show confirmation dialog
+  useEffect(() => {
+    const getFicheById = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/fichePatient/${id}`
+        );
+        const {
+          name,
+          lastname,
+          address,
+          telephone,
+          sexe,
+          dateNaiss,
+          email,
+          numSecuriteSoc,
+        } = response.data;
+        //setValue de react form hook permet de définir les valeurs initiales des champs du formulaire sans avoir besoin de l'attribut value dans les éléments <input>. react-hook-form se charge de mettre à jour les états des champs en interne.
+        setValue("lastname", lastname);
+        setValue("telephone", telephone);
 
-  //         setaddSuccessMessage("Utilisateur ajouté avec succès !"); // Set success message
-  //         setTimeout(() => {
-  //           setaddSuccessMessage(null); // Reset success message after 3 seconds
-  //         }, 2500);
-  //       } else {
-  //         // Handle unsuccessful status codes (e.g., 400, 500)
-  //         setMsg("Erreur lors de l'ajout de l'utilisateur"); // Set error message
-  //       }
-  //     } catch (error) {
-  //       if (error.response) {
-  //         setMsg(error.response.data.msg);
-  //       }
-  //     }
-  //   };
+       setValue("name",name);
+        setValue("email", email);
+        setValue("sexe", sexe);
+        setValue("numSecuriteSoc", numSecuriteSoc);
+        setValue("dateNaiss", dateNaiss);
+        setValue("address", address);
+      } catch (error) {
+        console.error(error.response ? error.response.data.msg : error.message);
+      }
+    };
+    getFicheById();
+  }, [id, setValue]);
 
-  //   //boite de dialogue buttons functions to navigate
-  //   const handleReturnToList = (e) => {
-  //     // Redirect to users list
-  //     e.preventDefault(); //on doit l'ajouter sinon l'ajout ne fonctionnera pas
-  //     navigate("/users");
-  //   };
-
-  //   const handleContinueAdding = () => {
-  //     setShowConfirmationDialog(false);
-  //     // Continuer l'ajout
-  //   };
+  const updateFiche = async (data) => {
+    try {
+      await axios.patch(`http://localhost:5000/fichePatient/${id}`, data);
+      seteditSuccessMessage("Modification effectuée avec succès");
+      setTimeout(() => {
+        navigate("/listFichesSec");
+      }, 2000);
+    } catch (error) {
+      console.error(error.response ? error.response.data.msg : error.message);
+    }
+  };
 
   return (
     <div>
@@ -164,7 +145,7 @@ function FormEditFiche() {
         {/* Begin Page Content */}
         <div className="container-fluid">
           {/* Page Heading */}
-          <h1 className="h3 mb-2 text-gray-800">Modifier la fiche patient</h1>
+          <h1 className="h3 mb-2 text-gray-800">Modifier fiche patient</h1>
           {/* Add some space */}
           <span className="mr-3"></span>
 
@@ -173,11 +154,39 @@ function FormEditFiche() {
               {/* Add some space */}
               <span className="mr-2"></span>
 
+              <div>
+                {msg && (
+                  <div className="d-flex justify-content-center">
+                    <div
+                      className=" text-center col-md-3 alert alert-success"
+                      role="alert"
+                    >
+                      {msg}
+                    </div>
+                  </div>
+                )}
+
+                {/* editSuccess Message */}
+                {editSuccessMessage && (
+                  <div className="d-flex justify-content-center">
+                    <div
+                      className=" text-center col-md-3 alert alert-success"
+                      role="alert"
+                    >
+                      {editSuccessMessage}
+                    </div>
+                  </div>
+                )}
+                {/* end edit Success Message */}
+              </div>
+              {/* end Add Success Message */}
+              <br></br>
+
               {/* Add some space */}
               <span className="mr-3"></span>
 
               {/* Form */}
-              <form className="user">
+              <form className="user" onSubmit={handleSubmit(updateFiche)}>
                 <div className="form-group row">
                   <div className="col-sm-6 mb-3 mb-sm-0">
                     <input
@@ -185,13 +194,13 @@ function FormEditFiche() {
                       className="form-control form-control-user"
                       id="exampleLastName"
                       placeholder="Nom"
-                      //name="lastname"
-                      //   value={lastname}
-                      //   {...register("lastname")}
-                      //   onChange={(e) => setLastname(e.target.value)}
+                      name="lastname"
+                      {...register("lastname", { required: true })}
+                      // value={lastname}
+                      // onChange={(e) => setLastname(e.target.value)}
                     />
                     {/* afficher le message d'erreur de valisation  */}
-                    {/* <p style={{ color: "red" }}>{errors.lastname?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.lastname?.message}</p>
                   </div>
                   <div className="form-group col-sm-6 ">
                     <input
@@ -199,11 +208,11 @@ function FormEditFiche() {
                       className="form-control form-control-user"
                       id="examplePhone"
                       placeholder="Téléphone"
-                      //   {...register("telephone")}
-                      //   value={telephone}
-                      //   onChange={(e) => setTelephone(e.target.value)}
+                      {...register("telephone")}
+                      // value={telephone}
+                      // onChange={(e) => setTelephone(e.target.value)}
                     />
-                    {/* <p style={{ color: "red" }}>{errors.telephone?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.telephone?.message}</p>
                   </div>
                 </div>
 
@@ -214,11 +223,12 @@ function FormEditFiche() {
                       className="form-control form-control-user"
                       id="exampleFirstName"
                       placeholder="Prénom"
-                      //   {...register("name")}
-                      //   value={name}
-                      //   onChange={(e) => setName(e.target.value)}
+                      name="name"
+                      {...register("name")}
+                      // value={name}
+                      // onChange={(e) => setName(e.target.value)}
                     />
-                    {/* <p style={{ color: "red" }}>{errors.name?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.name?.message}</p>
                   </div>
 
                   <div className="col-sm-6 mb-3 mb-sm-0">
@@ -227,56 +237,60 @@ function FormEditFiche() {
                       className="form-control form-control-user"
                       id="exampleMail"
                       placeholder="E-mail"
-                      //   {...register("email")}
-                      //   value={email}
-                      //   onChange={(e) => setEmail(e.target.value)}
+                      {...register("email")}
+                      // value={email}
+                      // onChange={(e) => setEmail(e.target.value)}
                     />
-                    {/* <p style={{ color: "red" }}>{errors.email?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.email?.message}</p>
                   </div>
                 </div>
 
                 <div className="form-group row">
                   <div className="col-sm-6">
-                  <label>Sexe</label>
+                    <label>Sexe</label>
 
                     <Form.Select
                       className="form-control"
-                      //   {...register("role", { required: true })}
-                      //   value={role}
-                      //   onChange={(e) => setRole(e.target.value)}
-                    > 
-                      <option value="femme">Femme</option>
-                      <option value="homme">Homme</option>
+                      {...register("sexe", { required: true })}
+                      // value={sexe}
+                      // onChange={(e) => setSexe(e.target.value)}
+                    >
+                      <option value="">Select</option>
+                      <option value="Femme">Femme</option>
+                      <option value="Homme">Homme</option>
                     </Form.Select>
-                    {/* <p style={{ color: "red" }}>{errors.role?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.sexe?.message}</p>
                   </div>
                   <div className="col-sm-6 mb-3 mb-sm-0">
                     <input
-                      type="email"
+                      type="text"
                       className="form-control form-control-user"
-                      id="exampleMail"
+                      id="exampleNumSec"
                       placeholder=" Numero de sécurité sociale"
-                      //   {...register("email")}
-                      //   value={email}
-                      //   onChange={(e) => setEmail(e.target.value)}
+                      {...register("numSecuriteSoc")}
+                      // value={numSecuriteSoc}
+                      // onChange={(e) => setNumSecuriteSoc(e.target.value)}
                     />
-                    {/* <p style={{ color: "red" }}>{errors.email?.message}</p> */}
+                    <p style={{ color: "red" }}>
+                      {errors.numSecuriteSoc?.message}
+                    </p>
                   </div>
                 </div>
 
                 <div className="form-group row">
-                   
-                  <div className="col-sm-6 mb-3 mb-sm-0"> <label>Date naissance</label>
+                  <div className="col-sm-6 mb-3 mb-sm-0">
+                    {" "}
+                    <label>Date naissance</label>
                     <input
                       type="date"
                       className="form-control form-control-user"
-                      id="exampleMail"
+                      id="exampleDateNaiss"
                       placeholder="Date naissance "
-                      //   {...register("email")}
-                      //   value={email}
-                      //   onChange={(e) => setEmail(e.target.value)}
+                      {...register("dateNaiss")}
+                      // value={dateNaiss || ""} //la chaîne vide ("") est utilisée comme valeur par défaut. Ainsi, lorsque dateNaiss est null (lorsque le champ est vide), la chaîne vide est utilisée pour afficher le champ de saisie de date
+                      // onChange={(e) => setDateNaiss(e.target.value || null)} //s'assurer que lorsque le champ de saisie de date est vide, la valeur de dateNaiss est correctement définie sur null.
                     />
-                    {/* <p style={{ color: "red" }}>{errors.email?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.dateNaiss?.message}</p>
                   </div>
                 </div>
 
@@ -285,24 +299,26 @@ function FormEditFiche() {
                     <input
                       type="text"
                       className="form-control form-control-user"
-                      id="exampleMail"
+                      id="exampleAdresse"
                       placeholder="Adresse"
-                      //   {...register("email")}
-                      //   value={email}
-                      //   onChange={(e) => setEmail(e.target.value)}
+                      {...register("address")}
+                      // value={address}
+                      // onChange={(e) => setAddress(e.target.value)}
                     />
-                    {/* <p style={{ color: "red" }}>{errors.email?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.address?.message}</p>
                   </div>
                 </div>
-
 
                 <div className="col-sm-3 mx-auto d-flex space ">
                   <button
                     type="submit"
                     className="btn btn-primary btn-user btn-block heightt "
-              
-                    style={{ marginRight: '15px', marginTop:'20', marginBottom:'30',borderRadius: '15px',  }}
-
+                    style={{
+                      marginRight: "15px",
+                      marginTop: "20",
+                      marginBottom: "30",
+                      borderRadius: "15px",
+                    }}
                   >
                     <Link to="/acceuil"></Link>
                     Modifier
@@ -312,11 +328,15 @@ function FormEditFiche() {
 
                   <button
                     className="btn btn-light btn-user btn-block heightt anuller"
-                    style={{ marginLeft: '10px',marginTop:'20',marginBottom:'30', borderRadius: '10px' }}
-
-                    >
-                        Annuller
-                    </button>
+                    style={{
+                      marginLeft: "10px",
+                      marginTop: "20",
+                      marginBottom: "30",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    Annuller
+                  </button>
                 </div>
               </form>
               <hr />

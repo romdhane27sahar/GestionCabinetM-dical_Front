@@ -174,8 +174,7 @@ function FormAddUser() {
               <span className="mr-2"></span>
 
               <div>
-                
-              {msg && (
+                {msg && (
                   <div className="d-flex justify-content-center">
                     <div
                       className=" text-center col-md-3 alert alert-success"

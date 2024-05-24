@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
@@ -13,150 +13,114 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 function FormAddRendezVous() {
-  //   const [name, setName] = useState("");
-  //   const [email, setEmail] = useState("");
-  //   const [password, setPassword] = useState("");
-  //   const [confPassword, setConfPassword] = useState("");
-  //   const [role, setRole] = useState("");
-  //   const [msg, setMsg] = useState("");
+  const [name, setName] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [dateRendezVous, setDateRendezVous] = useState("");
+  const [heureRendezVous, setHeureRendezVous] = useState("");
+  const [msg, setMsg] = useState("");
 
-  //   const [lastname, setLastname] = useState("");
-  //   const [address, setAddress] = useState("");
-  //   const [telephone, setTelephone] = useState("");
+  const [patients, setPatients] = useState([]);
 
-  //   const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  //   //confirmation dialog
-  //   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-  //   //add success message state
-  //   const [addSuccessMessage, setaddSuccessMessage] = useState(null); // State for success message
+  //confirmation dialog
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  //add success message state
+  const [addSuccessMessage, setaddSuccessMessage] = useState(null); // State for success message
 
-  //   // Define Yup schema for validation
-  //   const schema = yup.object().shape({
-  //     name: yup
-  //       .string()
-  //       .min(3, "Prénom contient minimum 3 lettres")
-  //       .required("Prénom est obligatoire !")
-  //       .test(
-  //         "no-digits",
-  //         "Le nom ne doit pas contenir de chiffres !",
-  //         (value) => !/\d/.test(value)
-  //       ),
+  // Define Yup schema for validation
+  const schema = yup.object().shape({
+    name: yup.string().required("Prénom est obligatoire !"),
 
-  //     lastname: yup
-  //       .string()
-  //       .min(3, "Nom contient minimum 3 lettres")
-  //       .required("Nom est obligatoire !")
-  //       .test(
-  //         "no-digits",
-  //         "Le nom ne doit pas contenir de chiffres",
-  //         (value) => !/\d/.test(value)
-  //       ),
+    lastname: yup.string().required("Nom est obligatoire !"),
 
-  //     address: yup.string().required("Adresse est obligatoire !"),
+    dateRendezVous: yup
+      .date()
+      // .nullable()
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : value
+      ) //mesure de précauton (car onChange deja transforme le vide en null ) transforme la valeur vide en null avant la validation: spécifier explicitement à yup que si la valeur originale (originalValue) est une chaîne vide (""), elle doit être transformée en null
+      .required("Veuillez choisir la date du rendez-vous !"),
 
-  //     email: yup
-  //       .string()
-  //       .email("Email invalide")
-  //       .required("Email est obligatoire !")
-  //       .matches(/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}/, "Email invalide"),
+      // heureRendezVous: yup
+      // .number()
+      // .required("Veuillez choisir l'heure du rendez-vous !")
+  
+  });
 
-  //     telephone: yup
-  //       .string()
-  //       .matches(/^\d{8}$/, "Numero téléphone doit est de 8 chiffres")
-  //       .required("téléphone est un champs obligatoire"),
+  //execute the schema validation to the form
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
-  //     password: yup
-  //       .string()
-  //       .min(8, "Mot de passe trop court (minimum 8 caractères)")
-  //       .required("Mot de passe est obligatoire !")
-  //       .matches(
-  //         /[!@#$%^&*(),.?":{}|<>]/,
-  //         "Mot de passe doit contenir au moins un caractère spécial"
-  //       )
-  //       .matches(/[0-9]/, "Mot de passe doit contenir au moins un chiffre")
-  //       .matches(
-  //         /[A-Z]/,
-  //         "Mot de passe doit contenir au moins une lettre majuscule "
-  //       )
-  //       .matches(
-  //         /[a-z]/,
-  //         "Mot de passe doit contenir au moins une lettre miniscule"
-  //       ),
+  useEffect(() => {
+    const getPatients = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/fichePatient`);
+        setPatients(response.data); // Stocker les données des patients dans l'état local
+        //setValue de react form hook permet de définir les valeurs initiales des champs du formulaire sans avoir besoin de l'attribut value dans les éléments <input>. react-hook-form se charge de mettre à jour les états des champs en interne.
+      } catch (error) {
+        console.error(error.response ? error.response.data.msg : error.message);
+      }
+    };
+    getPatients();
+  });
 
-  //     confPassword: yup
-  //       .string()
-  //       .oneOf(
-  //         [yup.ref("password"), null],
-  //         "Les mots de passe doivent correspondre"
-  //       )
-  //       .required("Confirmer mot de passe est obligatoire !"),
+  //Le composant TimePicker utilisé dans le code semble renvoyer un temps en secondes depuis minuit. la base de données attend un format différent (comme "HH:MM"
+  const convertSecondsToHHMM = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  };
+  //add function
+  const saveRendezVous = async (e) => {
+    //e.preventDefault();
 
-  //     role: yup
-  //       .string()
+    try {
+      const response = await axios.post("http://localhost:5000/rendezVous", {
+        name: name,
+        lastname: lastname,
+        dateRendezVous: dateRendezVous,
+        heureRendezVous: convertSecondsToHHMM(heureRendezVous), // Convert time to HH:MM format
+        //prochainRendezVousId:3
+      });
+      //navigate("/users");
 
-  //       .oneOf(
-  //         ["admin", "secretaire", "medecin"],
-  //         "Veuillez selectionner un role !"
-  //       ),
-  //   });
+      //boite de dialogue
+      if (response.status === 201) {
+        setShowConfirmationDialog(true); // Show confirmation dialog
 
-  //   //execute the schema validation to the form
-  //   const {
-  //     register,
-  //     handleSubmit,
-  //     formState: { errors },
-  //   } = useForm({
-  //     resolver: yupResolver(schema),
-  //   });
+        setaddSuccessMessage("rendez-vous ajouté avec succès !"); // Set success message
+        setTimeout(() => {
+          setaddSuccessMessage(null); // Reset success message after 3 seconds
+        }, 2500);
+      } else {
+        // Handle unsuccessful status codes (e.g., 400, 500)
+        setMsg("Erreur lors de l'ajout du rendez-vous"); // Set error message
+      }
+    } catch (error) {
+      if (error.response) {
+        setMsg(error.response.data.msg);
+      }
+    }
+  };
 
-  //   //add function
-  //   const saveUser = async (e) => {
-  //     //e.preventDefault();
+  //boite de dialogue buttons functions to navigate
+  const handleReturnToList = (e) => {
+    // Redirect to users list
+    e.preventDefault(); //on doit l'ajouter sinon l'ajout ne fonctionnera pas
+    navigate("/listRendezVous");
+  };
 
-  //     try {
-  //       const response = await axios.post("http://localhost:5000/users", {
-  //         name: name,
-  //         email: email,
-  //         password: password,
-  //         confPassword: confPassword,
-  //         role: role,
-  //         lastname: lastname,
-  //         address: address,
-  //         telephone: telephone,
-  //       });
-  //       //navigate("/users");
-
-  //       //boite de dialogue
-  //       if (response.status === 201) {
-  //         setShowConfirmationDialog(true); // Show confirmation dialog
-
-  //         setaddSuccessMessage("Utilisateur ajouté avec succès !"); // Set success message
-  //         setTimeout(() => {
-  //           setaddSuccessMessage(null); // Reset success message after 3 seconds
-  //         }, 2500);
-  //       } else {
-  //         // Handle unsuccessful status codes (e.g., 400, 500)
-  //         setMsg("Erreur lors de l'ajout de l'utilisateur"); // Set error message
-  //       }
-  //     } catch (error) {
-  //       if (error.response) {
-  //         setMsg(error.response.data.msg);
-  //       }
-  //     }
-  //   };
-
-  //   //boite de dialogue buttons functions to navigate
-  //   const handleReturnToList = (e) => {
-  //     // Redirect to users list
-  //     e.preventDefault(); //on doit l'ajouter sinon l'ajout ne fonctionnera pas
-  //     navigate("/users");
-  //   };
-
-  //   const handleContinueAdding = () => {
-  //     setShowConfirmationDialog(false);
-  //     // Continuer l'ajout
-  //   };
+  const handleContinueAdding = () => {
+    setShowConfirmationDialog(false);
+    // Continuer l'ajout
+  };
 
   return (
     <div>
@@ -174,39 +138,110 @@ function FormAddRendezVous() {
               {/* Add some space */}
               <span className="mr-2"></span>
 
+              <div>
+                {msg && (
+                  <div className="d-flex justify-content-center">
+                    <div
+                      className=" text-center col-md-3 alert alert-success"
+                      role="alert"
+                    >
+                      {msg}
+                    </div>
+                  </div>
+                )}
+
+                {/* Add Success Message */}
+                {addSuccessMessage && (
+                  <div className="d-flex justify-content-center">
+                    <div
+                      className=" text-center col-md-3 alert alert-success"
+                      role="alert"
+                    >
+                      {addSuccessMessage}
+                    </div>
+                  </div>
+                )}
+                {/* end Add Success Message */}
+
+                {/* boite de dialogue */}
+                {showConfirmationDialog && (
+                  <div className="col md-6 d-flex justify-content-center">
+                    <div className="confirmation-dialog">
+                      <br></br>
+                      <p>
+                        Voulez-vous retourner à la liste des utilisateurs ou
+                        continuer l'ajout ?
+                      </p>
+                      <br />
+
+                      <div>
+                        {/* <Link to="/users"> */}
+                        <button
+                          style={{ backgroundColor: "#648de5" }}
+                          onClick={
+                            handleReturnToList
+                          } /**il faut un bouton et onClick pour naviguer à l'autre page suite à un clic sur bouton sinon link to ("/users")va retourner automatiquement sans clic sur bouton  , */
+                        >
+                          Retourner à la liste des fiches patients
+                        </button>
+                        {/* </Link> */}
+
+                        <button
+                          style={{ backgroundColor: "#648de5" }}
+                          onClick={handleContinueAdding}
+                        >
+                          Continuer l'ajout
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* end boite de dialogue */}
+              <br></br>
+
               {/* Add some space */}
               <span className="mr-3"></span>
 
               {/* Form */}
-              <form className="user">
+              <form className="user" onSubmit={handleSubmit(saveRendezVous)}>
                 <div className="form-group row">
                   <div className="col-sm-10 mb-3 mb-sm-0">
+                    <label>Nom patient</label>
                     <Form.Select
                       className="form-control "
-                      //   {...register("role", { required: true })}
-                      //   value={role}
-                      //   onChange={(e) => setRole(e.target.value)}
+                      {...register("lastname", { required: true })}
+                      value={lastname}
+                      onChange={(e) => setLastname(e.target.value)}
                     >
-                      <option value="femme">romdhane</option>
-                      <option value="homme">ben salah </option>
+                      {" "}
+                      {patients.map((patient) => (
+                        <option key={patient.id} value={patient.lastname}>
+                          {patient.lastname}
+                        </option>
+                      ))}
                     </Form.Select>
                     {/* afficher le message d'erreur de valisation  */}
-                    {/* <p style={{ color: "red" }}>{errors.lastname?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.lastname?.message}</p>
                   </div>
                 </div>
 
                 <div className="form-group row">
                   <div className="col-sm-10">
+                    <label>Prénom patient</label>
                     <Form.Select
                       className="form-control "
-                      //   {...register("role", { required: true })}
-                      //   value={role}
-                      //   onChange={(e) => setRole(e.target.value)}
+                      {...register("name", { required: true })}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                     >
-                      <option value="femme">Ali</option>
-                      <option value="homme">Salah</option>
+                      {patients.map((patient) => (
+                        <option key={patient.id} value={patient.name}>
+                          {patient.name}
+                        </option>
+                      ))}
                     </Form.Select>
-                    {/* <p style={{ color: "red" }}>{errors.name?.message}</p> */}
+                    <p style={{ color: "red" }}>{errors.name?.message}</p>
                   </div>
                 </div>
 
@@ -219,11 +254,13 @@ function FormAddRendezVous() {
                       className="form-control form-control-user"
                       id="exampleMail"
                       placeholder="Date rendez-vous "
-                      //   {...register("email")}
-                      //   value={email}
-                      //   onChange={(e) => setEmail(e.target.value)}
+                      {...register("dateRendezVous")}
+                      value={dateRendezVous} // Utilisez la valeur de l'état pour le champ de saisie
+                      onChange={(e) => setDateRendezVous(e.target.value)} // Mettez à jour l'état lorsque la valeur du champ de saisie change
                     />
-                    {/* <p style={{ color: "red" }}>{errors.email?.message}</p> */}
+                    <p style={{ color: "red" }}>
+                      {errors.dateRendezVous?.message}
+                    </p>
                   </div>
                 </div>
 
@@ -231,9 +268,15 @@ function FormAddRendezVous() {
                   <div className="col-sm-10 mb-3 mb-sm-0">
                     <label>Heure Rendez-vous</label>
 
-                    <TimePicker start="7:00" end="21:00" step={30} />
-
-                    {/* <p style={{ color: "red" }}>{errors.email?.message}</p> */}
+                    <TimePicker
+                      start="7:00"
+                      end="21:00"
+                      step={30}
+                      {...register("heureRendezVous")}
+                      value={heureRendezVous} // Use the state value for TimePicker
+                      onChange={(value) => setHeureRendezVous(value)}
+                    />
+                    <p style={{ color: "red" }}>{errors.heureRendezVous?.message}</p>
                   </div>
                 </div>
 
@@ -244,12 +287,11 @@ function FormAddRendezVous() {
                     style={{
                       marginLeft: "150%",
                       marginRight: "5%",
-                     
+
                       marginTop: "20",
                       marginBottom: "30",
                       borderRadius: "15px",
-                      padding:"0px 50px"
-                    
+                      padding: "0px 50px",
                     }}
                   >
                     <Link to="/acceuil"></Link>
@@ -266,7 +308,7 @@ function FormAddRendezVous() {
                       marginTop: "20",
                       marginBottom: "30",
                       borderRadius: "10px",
-                      padding:"0px 50px"
+                      padding: "0px 50px",
                     }}
                   >
                     Annuller

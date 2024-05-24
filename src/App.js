@@ -56,7 +56,7 @@ function App() {
           <Route path="/listPatientsMed" element={<Patients></Patients>}></Route>
           <Route path="/NewFicheSec" element={<NewFiche></NewFiche>}></Route>
           <Route path="/listFichesSec" element={<ListFiches></ListFiches>}></Route>
-          <Route path="/fiches/edit" element={<EditFiche></EditFiche>}></Route>
+          <Route path="/fiches/edit/:id" element={<EditFiche></EditFiche>}></Route>
           <Route path="/addRendezVous" element={<AddRendezVous></AddRendezVous>}></Route>
           <Route path="/listRendezVous" element={<ListRendezVous></ListRendezVous>}></Route>
           <Route path="/rendezVous/edit" element={<EditRendezVous></EditRendezVous>}></Route>

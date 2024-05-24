@@ -123,7 +123,7 @@ function FormEditUser() {
           {/* Add some space */}
           <span className="mr-3"></span>
 
-          {/* Delete Success Message */}
+          {/* editSuccess Message */}
           {editSuccessMessage && (
             <div className="d-flex justify-content-center">
               <div
@@ -134,7 +134,7 @@ function FormEditUser() {
               </div>
             </div>
           )}
-         {/* end Delete Success Message */}
+         {/* end edit Success Message */}
 
           <div className="card shadow mb-4">
             <div className="card-body">
